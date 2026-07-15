@@ -1,3 +1,12 @@
+<?php
+	// Zugriff nur fuer angemeldete Nutzer mit Einstellungs-Recht (role[9]) -
+	// vorher war diese Seite komplett ohne Login erreichbar (unauth. SQL-Injection).
+	session_start();
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || $_SESSION["role"][9]!=="1"){
+		header("location: /login/login.php");
+		exit;
+	}
+?>
 <!DOCTYPE html>
 <html>
 <?php
@@ -23,8 +32,8 @@ function load_user()
 	include "../assets/components.php";
 	if(isset($_POST["printer"])){
 		$color=htmlspecialchars($_GET["color"]);
-		$id=htmlspecialchars($_POST["printer"]);
-		$sql="update printer set color='$color' where id=$id;";
+		$id=(int)$_POST["printer"]; // (int) verhindert SQL-Injection im numerischen id-Kontext
+		$sql="update printer set color='".mysqli_real_escape_string($link, $color)."' where id=$id;"; // id ist int, color escaped
 		//echo($sql);
 		$stmt = mysqli_prepare($link, $sql);
 		mysqli_stmt_execute($stmt);
@@ -42,7 +51,7 @@ function load_user()
 	  	<div style="width: 100hh">
 	      <h1>Filamentfarbe Aktualisieren</h1>
 	      <form class="mt-5" enctype="multipart/form-data" method="POST" action="">
-	      <input type="text" value="<?php echo($_GET["color"]); ?>" name="color" disabled><br><br>
+	      <input type="text" value="<?php echo htmlspecialchars($_GET["color"] ?? ''); ?>" name="color" disabled><br><br>
 	      <select class="form-control selector" name="printer" required>
 		<?php
 			//get number of printers

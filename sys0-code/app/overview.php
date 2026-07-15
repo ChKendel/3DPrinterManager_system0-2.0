@@ -23,7 +23,7 @@
 	if(isset($_GET['free'])&&$_GET["rid"]==($_SESSION["rid"]-1))
         {
 		$cnt="";
-                $printer_id=htmlspecialchars($_GET['free']);
+                $printer_id=(int)$_GET['free']; // (int) verhindert SQL-Injection im numerischen id-Kontext
                 $sql="select used_by_userid from printer where id=$printer_id";
                 $stmt = mysqli_prepare($link, $sql);
                 mysqli_stmt_execute($stmt);
@@ -59,7 +59,7 @@
 	}
         if(isset($_GET['remove_queue'])&&$_GET["rid"]==($_SESSION["rid"]-1))
         {
-        	$id=htmlspecialchars($_GET['remove_queue']);
+        	$id=(int)$_GET['remove_queue']; // (int) verhindert SQL-Injection
                	$sql="delete from queue where id=$id";
                 $stmt = mysqli_prepare($link, $sql);
                 mysqli_stmt_execute($stmt);
@@ -68,7 +68,7 @@
      	{
 		$apikey="";
                 $printer_url="";
-                $printer_id=htmlspecialchars($_GET['cancel']);
+                $printer_id=(int)$_GET['cancel']; // (int) verhindert SQL-Injection
                	$sql="select used_by_userid,apikey,printer_url from printer where id=$printer_id";
                 $stmt = mysqli_prepare($link, $sql);
                 mysqli_stmt_execute($stmt);
@@ -93,8 +93,8 @@
 
 
 	if(isset($_GET["set_class"]) && isset($_POST["class"])){
-		$class_id=htmlspecialchars($_POST["class"]);
-		$sql="update users set class_id=$class_id where username='$username'";
+		$class_id=(int)$_POST["class"]; // (int) verhindert SQL-Injection
+		$sql="update users set class_id=$class_id where username='".mysqli_real_escape_string($link, $username)."'"; // class_id ist int, username escaped
 		$stmt = mysqli_prepare($link, $sql);
 		mysqli_stmt_execute($stmt);
 		$stmt->close();
